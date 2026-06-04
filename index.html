@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruby AI · Crimson Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --r0:#0d0404;--r1:#1a0606;--r2:#280a0a;--r3:#3d1010;--r4:#5c1a1a;--r5:#8b2020;
+  --au2:#a87420;--au3:#c9962e;--au4:#e0b84a;--au5:#f5e09a;--au6:#fffaee;
+  --rmist:#e05555;--rfoam:#f4a0a0;
+  --ink:#f5e8e8;--muted:#9a6666;--dim:#5a3030;
+  --green:#4caf82;--blue:#5a9fd4;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--r0);color:var(--ink);}
+body{display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOPBAR */
+#topbar{background:linear-gradient(90deg,var(--r2),var(--r1));border-bottom:1px solid rgba(201,150,46,0.25);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+#logo-wrap{display:flex;align-items:center;gap:10px;}
+#logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--au2),var(--au4));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+#brand-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--au4);line-height:1;}
+#brand-sub{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+#topbar-right{display:flex;align-items:center;gap:8px;}
+#status-pill{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--rmist);background:rgba(91,26,26,0.35);border:1px solid rgba(224,85,85,0.2);padding:4px 11px;border-radius:20px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--rmist);animation:livePulse 2s infinite;}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(224,85,85,0.5);}50%{box-shadow:0 0 0 4px rgba(224,85,85,0);}}
+#clear-btn{background:rgba(61,16,16,0.5);border:1px solid rgba(201,150,46,0.2);color:var(--muted);padding:4px 11px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+#clear-btn:hover{color:var(--au4);border-color:rgba(201,150,46,0.45);}
+
+/* MOOD BAR */
+#mood-bar{background:var(--r1);border-bottom:1px solid rgba(201,150,46,0.1);padding:7px 14px;display:flex;gap:6px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+#mood-bar::-webkit-scrollbar{display:none;}
+.chip{padding:4px 12px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(201,150,46,0.18);background:rgba(40,10,10,0.55);color:var(--muted);transition:all .2s;white-space:nowrap;font-weight:500;}
+.chip.active,.chip:hover{background:rgba(201,150,46,0.16);border-color:rgba(201,150,46,0.45);color:var(--au4);}
+
+/* MESSAGES */
+#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
+#msgs::-webkit-scrollbar{width:3px;}
+#msgs::-webkit-scrollbar-thumb{background:rgba(201,150,46,0.2);border-radius:3px;}
+
+.row{display:flex;gap:9px;max-width:88%;}
+.row.bot{align-self:flex-start;}
+.row.user{align-self:flex-end;flex-direction:row-reverse;}
+.av{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;}
+.bot .av{background:linear-gradient(135deg,var(--r3),var(--r2));border:1px solid rgba(201,150,46,0.2);}
+.user .av{background:linear-gradient(135deg,var(--au2),var(--au4));color:var(--r0);font-size:12px;font-weight:700;}
+.col{display:flex;flex-direction:column;gap:3px;}
+.bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.7;word-break:break-word;}
+.bot .bubble{background:rgba(61,16,16,0.5);border:1px solid rgba(201,150,46,0.12);color:var(--ink);border-bottom-left-radius:3px;}
+.user .bubble{background:linear-gradient(135deg,rgba(201,150,46,0.2),rgba(224,184,74,0.1));border:1px solid rgba(201,150,46,0.32);color:var(--au5);border-bottom-right-radius:3px;}
+.bubble b,.bubble strong{color:var(--au4);}
+.bubble .section-label{display:inline-block;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--au3);margin-bottom:6px;font-weight:600;}
+.meta{font-size:10px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+.row.user .meta{justify-content:flex-end;}
+.msg-actions{display:flex;gap:6px;margin-top:3px;opacity:0;transition:opacity .2s;}
+.row:hover .msg-actions{opacity:1;}
+.msg-act-btn{background:none;border:1px solid rgba(201,150,46,0.15);color:var(--dim);padding:2px 8px;border-radius:10px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.msg-act-btn:hover{color:var(--au4);border-color:rgba(201,150,46,0.4);}
+
+/* EXPANDABLE SECTIONS */
+.expand-section{margin-top:10px;border-top:1px solid rgba(201,150,46,0.1);padding-top:8px;}
+.expand-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:5px 0;color:var(--au3);font-size:12px;font-weight:600;letter-spacing:.5px;user-select:none;}
+.expand-header:hover{color:var(--au4);}
+.expand-arrow{transition:transform .25s;font-size:10px;}
+.expand-arrow.open{transform:rotate(180deg);}
+.expand-body{max-height:0;overflow:hidden;transition:max-height .35s ease, opacity .3s;opacity:0;font-size:12.5px;line-height:1.7;color:var(--ink);}
+.expand-body.open{max-height:600px;opacity:1;}
+.expand-body p{margin-top:7px;}
+.expand-body ul{margin-top:7px;padding-left:16px;}
+.expand-body li{margin-bottom:4px;}
+
+/* QUICK REPLIES */
+.qr-wrap{display:flex;flex-wrap:wrap;gap:7px;padding-left:41px;}
+.qr{padding:6px 13px;border-radius:18px;font-size:11.5px;cursor:pointer;border:1px solid rgba(201,150,46,0.28);background:rgba(28,8,8,0.8);color:var(--au4);transition:all .2s;font-weight:500;}
+.qr:hover{background:rgba(201,150,46,0.18);border-color:var(--au3);transform:translateY(-1px);}
+
+/* SUGGESTION CARD */
+.sug-card{background:rgba(40,10,10,0.7);border:1px solid rgba(201,150,46,0.15);border-radius:13px;padding:12px 14px;margin-left:41px;}
+.sug-title{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--au3);font-weight:600;margin-bottom:9px;}
+.sug-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sug-opt{padding:8px 10px;background:rgba(13,4,4,0.55);border:1px solid rgba(201,150,46,0.1);border-radius:9px;cursor:pointer;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;transition:all .2s;}
+.sug-opt:hover{background:rgba(201,150,46,0.1);border-color:rgba(201,150,46,0.32);color:var(--au5);transform:translateY(-1px);}
+
+/* TYPING */
+.typing-row{display:flex;gap:9px;}
+.typing-bub{padding:11px 14px;background:rgba(61,16,16,0.5);border:1px solid rgba(201,150,46,0.12);border-radius:14px;border-bottom-left-radius:3px;display:flex;gap:4px;align-items:center;}
+.td{width:5px;height:5px;border-radius:50%;background:var(--rmist);animation:td 1.3s ease-in-out infinite;}
+.td:nth-child(2){animation-delay:.15s;background:var(--au3);}
+.td:nth-child(3){animation-delay:.3s;}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.35;}30%{transform:translateY(-4px);opacity:1;}}
+
+/* INPUT ZONE */
+#input-zone{flex-shrink:0;padding:10px 14px 14px;background:linear-gradient(180deg,rgba(13,4,4,0),rgba(13,4,4,0.97) 28%);border-top:1px solid rgba(201,150,46,0.1);}
+#inp-row{display:flex;gap:8px;align-items:flex-end;}
+#inp-wrap{flex:1;background:rgba(28,8,8,0.7);border:1px solid rgba(201,150,46,0.22);border-radius:13px;display:flex;align-items:flex-end;transition:all .2s;overflow:hidden;}
+#inp-wrap:focus-within{border-color:rgba(201,150,46,0.5);box-shadow:0 0 0 3px rgba(201,150,46,0.06);}
+#inp{flex:1;background:transparent;border:none;outline:none;padding:10px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);resize:none;min-height:42px;max-height:100px;line-height:1.5;}
+#inp::placeholder{color:var(--dim);}
+#send{width:42px;height:42px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--r5),var(--au3));color:var(--r0);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+#send:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 22px rgba(201,150,46,0.42);}
+#send:disabled{opacity:.35;cursor:not-allowed;}
+#inp-footer{display:flex;justify-content:space-between;margin-top:7px;padding:0 2px;font-size:10px;color:var(--dim);}
+#inp-footer span{color:var(--au2);}
+
+/* MISC */
+.divider{text-align:center;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,150,46,0.15),transparent);}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--r3);border:1px solid rgba(201,150,46,0.3);color:var(--au5);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:100;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.feedback-row{display:flex;gap:6px;align-items:center;margin-top:4px;padding-left:41px;}
+.fb-btn{background:none;border:1px solid rgba(201,150,46,0.12);color:var(--dim);padding:3px 10px;border-radius:10px;font-size:11px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.fb-btn:hover{background:rgba(201,150,46,0.1);color:var(--au4);}
+.fb-btn.active{background:rgba(201,150,46,0.15);color:var(--au4);border-color:rgba(201,150,46,0.4);}
+
+/* PROGRESS BAR */
+.typing-status{font-size:10px;color:var(--dim);padding-left:41px;margin-top:-6px;height:14px;transition:opacity .3s;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div id="topbar">
+  <div id="logo-wrap">
+    <div id="logo-icon">🔥</div>
+    <div>
+      <div id="brand-name">Ruby AI</div>
+      <div id="brand-sub">Crimson Edition</div>
+    </div>
+  </div>
+  <div id="topbar-right">
+    <button id="clear-btn" onclick="clearChat()">🗑 Clear chat</button>
+    <div id="status-pill"><div class="live-dot"></div>Online · Ready</div>
+  </div>
+</div>
+
+<div id="mood-bar">
+  <div class="chip active" onclick="setMood(this,'neutral')">🧊 Neutral</div>
+  <div class="chip" onclick="setMood(this,'friendly')">😊 Friendly</div>
+  <div class="chip" onclick="setMood(this,'formal')">🎩 Formal</div>
+  <div class="chip" onclick="setMood(this,'creative')">🎨 Creative</div>
+  <div class="chip" onclick="setMood(this,'concise')">⚡ Concise</div>
+  <div class="chip" onclick="setMood(this,'expert')">🧠 Expert</div>
+  <div class="chip" onclick="setMood(this,'mentor')">🎓 Mentor</div>
+</div>
+
+<div id="msgs">
+  <div class="divider">Session Start</div>
+</div>
+
+<div id="input-zone">
+  <div id="inp-row">
+    <div id="inp-wrap">
+      <textarea id="inp" placeholder="Ask me anything — services, pricing, how APIs work, maths, capitals…" rows="1" onkeydown="onKey(event)" oninput="onInp(this)"></textarea>
+    </div>
+    <button id="send" onclick="sendMsg()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#0d0404"><path d="M2 21L23 12 2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+  <div id="inp-footer">
+    <div>🔥 <span>Ruby AI Pro</span> · Offline · No API needed</div>
+    <div id="cc">0 / 600</div>
+  </div>
+</div>
+
+<script>
+// ─── KNOWLEDGE BASE ───────────────────────────────────────────────────────────
+
+const KB = {
+
+  greeting: {
+    short: "Hello! Welcome to **Ruby AI — Crimson Edition** 🔥\n\nI'm your intelligent assistant, ready to help with services, pricing, support, security, integrations, and more. What would you like to explore?",
+    sections: []
+  },
+
+  services: {
+    short: "We offer a suite of premium AI-powered solutions. Tap any section below to learn more in detail:",
+    sections: [
+      {
+        title: "🤖 AI Chat — 24/7 Intelligent Conversations",
+        body: `<p>Ruby AI Chat is a fully customisable conversational AI that handles customer queries around the clock — without fatigue, delays, or inconsistency.</p>
+               <ul>
+                 <li><strong>Natural language understanding</strong> — handles complex, multi-turn dialogues</li>
+                 <li><strong>Intent detection</strong> — identifies what users actually need, not just what they type</li>
+                 <li><strong>Contextual memory</strong> — remembers conversation history for coherent follow-ups</li>
+                 <li><strong>Multi-language support</strong> — over 40 languages out of the box</li>
+                 <li><strong>Custom personas</strong> — brand the assistant with your tone, name, and avatar</li>
+               </ul>`
+      },
+      {
+        title: "📊 Smart Analytics — Deep Data Insights",
+        body: `<p>Turn raw conversation data into actionable business intelligence with our analytics dashboard.</p>
+               <ul>
+                 <li><strong>Sentiment tracking</strong> — understand how customers feel in real time</li>
+                 <li><strong>Topic clustering</strong> — automatically surface recurring themes and issues</li>
+                 <li><strong>Funnel analysis</strong> — see where users drop off in key flows</li>
+                 <li><strong>Custom reports</strong> — export as CSV, PDF, or live Notion/Sheets sync</li>
+                 <li><strong>Alerts</strong> — get notified when satisfaction dips or volume spikes</li>
+               </ul>`
+      },
+      {
+        title: "⚙️ Workflow Automation — Cut Repetitive Work",
+        body: `<p>Connect Ruby AI to your internal tools and automate the work that slows your team down.</p>
+               <ul>
+                 <li><strong>Ticket routing</strong> — auto-assign issues to the right team member</li>
+                 <li><strong>Form filling</strong> — extract and populate data from conversations</li>
+                 <li><strong>Escalation rules</strong> — hand off to a human agent when needed</li>
+                 <li><strong>Scheduled triggers</strong> — send proactive messages based on user events</li>
+                 <li><strong>Approval flows</strong> — route decisions through Slack, Teams, or email</li>
+               </ul>`
+      },
+      {
+        title: "🔗 API & Integrations — Connect Your Stack",
+        body: `<p>Ruby AI plugs directly into your existing tools via REST API, SDKs, and native connectors.</p>
+               <ul>
+                 <li><strong>REST API</strong> — clean, versioned endpoints with full Swagger docs</li>
+                 <li><strong>SDKs</strong> — Python, Node.js, Go, Java, Ruby, PHP</li>
+                 <li><strong>Webhooks</strong> — real-time event delivery to any endpoint</li>
+                 <li><strong>Native apps</strong> — Shopify, Salesforce, HubSpot, Zendesk, Intercom</li>
+                 <li><strong>No-code</strong> — Zapier and Make connectors for teams without developers</li>
+               </ul>`
+      },
+      {
+        title: "🧪 Custom AI Models — Fine-tuned for You",
+        body: `<p>For advanced use-cases, we can fine-tune a model on your own data for superior accuracy and brand fit.</p>
+               <ul>
+                 <li><strong>Domain fine-tuning</strong> — train on your product docs, FAQs, transcripts</li>
+                 <li><strong>Custom classifiers</strong> — build intent models specific to your industry</li>
+                 <li><strong>Private deployment</strong> — run models in your own VPC or on-premise</li>
+                 <li><strong>Continuous learning</strong> — the model improves as it sees more conversations</li>
+               </ul>`
+      }
+    ]
+  },
+
+  pricing: {
+    short: "We have plans for every stage of growth. Expand each plan below for the full breakdown:",
+    sections: [
+      {
+        title: "🆓 Starter — Free Forever",
+        body: `<p>Perfect for individuals and small projects exploring what Ruby AI can do.</p>
+               <ul>
+                 <li><strong>100 messages/day</strong> across all conversations</li>
+                 <li><strong>1 chatbot widget</strong> embeddable on any site</li>
+                 <li><strong>Basic analytics</strong> — message volume and response rate</li>
+                 <li><strong>Community support</strong> — access to our public forum</li>
+                 <li><strong>Ruby AI branding</strong> on the widget (removable on paid plans)</li>
+               </ul>
+               <p style="margin-top:8px;color:var(--au4)">No credit card required. Sign up in 60 seconds.</p>`
+      },
+      {
+        title: "⚡ Pro — $19 / month",
+        body: `<p>Built for growing businesses that need reliability and richer insights.</p>
+               <ul>
+                 <li><strong>Unlimited messages</strong> — no daily cap, ever</li>
+                 <li><strong>5 chatbot widgets</strong> with custom branding</li>
+                 <li><strong>Full analytics dashboard</strong> — sentiment, topics, funnels</li>
+                 <li><strong>Email & live chat support</strong> — response within 4 hours</li>
+                 <li><strong>Basic integrations</strong> — Slack, Zapier, Webhooks</li>
+                 <li><strong>API access</strong> — 50,000 API calls/month included</li>
+               </ul>
+               <p style="margin-top:8px;color:var(--au4)">14-day free trial. No credit card required.</p>`
+      },
+      {
+        title: "🏢 Business — $49 / month",
+        body: `<p>For teams that need power-user features, full API access, and priority support.</p>
+               <ul>
+                 <li><strong>Everything in Pro</strong>, plus:</li>
+                 <li><strong>Unlimited widgets</strong> across unlimited domains</li>
+                 <li><strong>Full API access</strong> — 500,000 calls/month + streaming</li>
+                 <li><strong>CRM integrations</strong> — Salesforce, HubSpot, Pipedrive</li>
+                 <li><strong>Custom AI personas</strong> — name, tone, avatar, language</li>
+                 <li><strong>Priority support</strong> — dedicated Slack channel, 2hr SLA</li>
+                 <li><strong>SSO & team roles</strong> — SAML, Google, Okta</li>
+               </ul>
+               <p style="margin-top:8px;color:var(--au4)">14-day free trial. Cancel anytime.</p>`
+      },
+      {
+        title: "🌐 Enterprise — Custom Pricing",
+        body: `<p>For large organisations with compliance, volume, and security requirements.</p>
+               <ul>
+                 <li><strong>Custom volume pricing</strong> — millions of messages/month</li>
+                 <li><strong>Dedicated infrastructure</strong> — private cloud or on-premise</li>
+                 <li><strong>Custom model fine-tuning</strong> on your own data</li>
+                 <li><strong>SLA guarantees</strong> — 99.99% uptime with financial penalties</li>
+                 <li><strong>Enterprise SSO</strong>, audit logs, DLP controls</li>
+                 <li><strong>Dedicated account manager</strong> + 24/7 phone support</li>
+                 <li><strong>GDPR, HIPAA, SOC 2 Type II</strong> certifications</li>
+               </ul>
+               <p style="margin-top:8px;color:var(--au4)">Contact sales@ruby.ai or book a call for a custom quote.</p>`
+      }
+    ]
+  },
+
+  support: {
+    short: "Our support team is always ready to help. Here's every way to reach us:",
+    sections: [
+      {
+        title: "💬 Live Chat — You're Already Here!",
+        body: `<p>The fastest way to get help is right here in this chat. I can resolve most issues instantly — from account setup to billing questions to technical troubleshooting.</p>
+               <p>If I can't solve it, I'll escalate directly to a human agent (avg. wait time: under 3 minutes on Business & Enterprise plans).</p>`
+      },
+      {
+        title: "📧 Email Support — support@ruby.ai",
+        body: `<p>Send a detailed description of your issue to <strong>support@ruby.ai</strong>.</p>
+               <ul>
+                 <li><strong>Starter plan</strong> — response within 48 hours</li>
+                 <li><strong>Pro plan</strong> — response within 4 hours</li>
+                 <li><strong>Business plan</strong> — response within 2 hours</li>
+                 <li><strong>Enterprise plan</strong> — response within 30 minutes, 24/7</li>
+               </ul>
+               <p>Please include your account email, a description of the issue, and any error messages or screenshots.</p>`
+      },
+      {
+        title: "📚 Help Centre — docs.ruby.ai",
+        body: `<p>Our Help Centre contains 500+ articles covering every feature, integration, and setting. Key sections:</p>
+               <ul>
+                 <li><strong>Getting Started</strong> — set up your first bot in 10 minutes</li>
+                 <li><strong>API Reference</strong> — full endpoint docs with code examples</li>
+                 <li><strong>Integration Guides</strong> — step-by-step for Salesforce, Shopify, Slack, etc.</li>
+                 <li><strong>Billing & Accounts</strong> — manage plans, invoices, team members</li>
+                 <li><strong>Troubleshooting</strong> — common errors and how to fix them</li>
+               </ul>`
+      },
+      {
+        title: "🔴 Status Page — status.ruby.ai",
+        body: `<p>Check real-time platform health and historical uptime at <strong>status.ruby.ai</strong>.</p>
+               <ul>
+                 <li>Subscribe to incident alerts via email or SMS</li>
+                 <li>View per-region status (EU, US, APAC)</li>
+                 <li>See post-mortems for past incidents</li>
+               </ul>
+               <p>Our 30-day average uptime is <strong>99.97%</strong>.</p>`
+      },
+      {
+        title: "🤝 Community Forum",
+        body: `<p>Join thousands of developers and business owners sharing tips, templates, and integrations at <strong>community.ruby.ai</strong>.</p>
+               <ul>
+                 <li>Share and download bot templates</li>
+                 <li>Post feature requests — top-voted ones get built</li>
+                 <li>Get answers from Ruby AI staff and power users</li>
+                 <li>Weekly office hours with the engineering team</li>
+               </ul>`
+      }
+    ]
+  },
+
+  about: {
+    short: "Here's the story behind Ruby AI — from our founding to today:",
+    sections: [
+      {
+        title: "🏛 Our Story & Mission",
+        body: `<p>Ruby AI was founded in 2022 with one belief: <strong>powerful AI should be accessible to every business</strong>, not just Fortune 500 companies with massive engineering teams.</p>
+               <p>We started as a small team of 8 in London, frustrated that deploying a capable AI assistant required months of work and millions in infrastructure. We set out to change that — and today businesses of all sizes go live in minutes.</p>`
+      },
+      {
+        title: "👥 The Team",
+        body: `<p>We're a team of <strong>40+ engineers, designers, and researchers</strong> across three continents.</p>
+               <ul>
+                 <li><strong>HQ</strong> — London, UK</li>
+                 <li><strong>Engineering hub</strong> — New York, USA</li>
+                 <li><strong>Research lab</strong> — Singapore</li>
+               </ul>
+               <p>Our team includes veterans from Google DeepMind, OpenAI, Stripe, and Twilio.</p>`
+      },
+      {
+        title: "📈 Scale & Traction",
+        body: `<p>Our platform processes millions of conversations every month across industries including e-commerce, healthcare, SaaS, and financial services.</p>
+               <ul>
+                 <li><strong>5M+</strong> conversations handled monthly</li>
+                 <li><strong>3,200+</strong> businesses on the platform</li>
+                 <li><strong>99.97%</strong> average platform uptime (last 12 months)</li>
+                 <li><strong>40+ languages</strong> supported</li>
+                 <li>Raised <strong>$14M Series A</strong> in 2024</li>
+               </ul>`
+      },
+      {
+        title: "🌱 Values & Culture",
+        body: `<p>Three values guide every decision we make:</p>
+               <ul>
+                 <li><strong>Accessibility</strong> — AI should work for a local bakery, not just a bank</li>
+                 <li><strong>Transparency</strong> — we publish our model limitations, uptime history, and roadmap publicly</li>
+                 <li><strong>Privacy-first</strong> — we never train on your customer data without explicit consent</li>
+               </ul>`
+      }
+    ]
+  },
+
+  api: {
+    short: "Ruby AI's API gives developers full programmatic control. Here's everything you need to know:",
+    sections: [
+      {
+        title: "🔌 REST API — Core Endpoints",
+        body: `<p>Our REST API follows OpenAPI 3.0 standards with full Swagger documentation at <strong>docs.ruby.ai/api</strong>.</p>
+               <ul>
+                 <li><strong>POST /v1/messages</strong> — send a message and get a response</li>
+                 <li><strong>GET /v1/sessions</strong> — list and manage conversation sessions</li>
+                 <li><strong>POST /v1/bots</strong> — programmatically create and configure bots</li>
+                 <li><strong>GET /v1/analytics</strong> — pull metrics and reports</li>
+               </ul>
+               <p>All responses are JSON. Rate limits are per API key and shown in response headers.</p>`
+      },
+      {
+        title: "📦 SDKs — Pick Your Language",
+        body: `<p>Official SDKs are available on GitHub and package registries:</p>
+               <ul>
+                 <li><strong>Python</strong> — <code>pip install ruby-ai</code></li>
+                 <li><strong>Node.js</strong> — <code>npm install @ruby-ai/sdk</code></li>
+                 <li><strong>Go</strong> — <code>go get github.com/ruby-ai/go-sdk</code></li>
+                 <li><strong>Ruby</strong> — <code>gem install ruby_ai</code></li>
+                 <li><strong>PHP & Java</strong> — available in beta</li>
+               </ul>
+               <p>All SDKs include typed models, auto-retry logic, and streaming helpers.</p>`
+      },
+      {
+        title: "⚡ Streaming Responses",
+        body: `<p>For real-time applications, our API supports Server-Sent Events (SSE) streaming so you can display tokens as they're generated — just like in this chat.</p>
+               <ul>
+                 <li>Add <strong><code>stream: true</code></strong> to any /v1/messages request</li>
+                 <li>Receive token-by-token deltas via SSE</li>
+                 <li>Works with all SDKs natively</li>
+                 <li>Ideal for chat UIs, copilots, and live text generation</li>
+               </ul>`
+      },
+      {
+        title: "🔔 Webhooks — Event-Driven Pipelines",
+        body: `<p>Subscribe to events on your Ruby AI account and get HTTP POST payloads delivered to your server in real time.</p>
+               <ul>
+                 <li><strong>message.created</strong> — fires on every new message</li>
+                 <li><strong>session.ended</strong> — fires when a conversation closes</li>
+                 <li><strong>escalation.triggered</strong> — fires when a human hand-off occurs</li>
+                 <li><strong>bot.error</strong> — fires on model or config errors</li>
+               </ul>
+               <p>Webhook deliveries include HMAC signatures for security verification.</p>`
+      },
+      {
+        title: "🔑 Authentication & Rate Limits",
+        body: `<p>Authenticate all requests with your API key in the <strong>Authorization: Bearer</strong> header.</p>
+               <ul>
+                 <li><strong>Starter</strong> — 1,000 API calls/month</li>
+                 <li><strong>Pro</strong> — 50,000 calls/month</li>
+                 <li><strong>Business</strong> — 500,000 calls/month</li>
+                 <li><strong>Enterprise</strong> — unlimited (SLA-backed)</li>
+               </ul>
+               <p>Get your free API key at <strong>docs.ruby.ai/api/keys</strong>.</p>`
+      }
+    ]
+  },
+
+  security: {
+    short: "Security isn't a feature — it's our foundation. Here's how we protect your data:",
+    sections: [
+      {
+        title: "🔐 Encryption — Data In Transit & At Rest",
+        body: `<p>All data is encrypted at every stage of its journey.</p>
+               <ul>
+                 <li><strong>TLS 1.3</strong> for all data in transit (HTTPS enforced)</li>
+                 <li><strong>AES-256</strong> encryption for all data stored on our servers</li>
+                 <li><strong>Encrypted backups</strong> — daily, stored across 3 geographies</li>
+                 <li><strong>Key management</strong> — HSM-based key storage, rotated quarterly</li>
+               </ul>`
+      },
+      {
+        title: "📜 Compliance & Certifications",
+        body: `<p>We maintain the certifications your business needs to operate confidently:</p>
+               <ul>
+                 <li><strong>SOC 2 Type II</strong> — audited annually by an independent firm</li>
+                 <li><strong>GDPR compliant</strong> — full DPA available, EU data residency option</li>
+                 <li><strong>CCPA compliant</strong> — for California-based customers</li>
+                 <li><strong>HIPAA ready</strong> — BAA available for healthcare plans</li>
+                 <li><strong>ISO 27001</strong> — certification in progress (2025)</li>
+               </ul>`
+      },
+      {
+        title: "🛡 Access Control & Authentication",
+        body: `<p>We give you granular control over who can access what.</p>
+               <ul>
+                 <li><strong>Role-based access control (RBAC)</strong> — Admin, Editor, Viewer roles</li>
+                 <li><strong>SSO / SAML 2.0</strong> — Google, Okta, Azure AD, OneLogin</li>
+                 <li><strong>MFA enforced</strong> — optional TOTP or hardware key requirement</li>
+                 <li><strong>IP whitelisting</strong> — restrict API access to known IPs</li>
+                 <li><strong>Audit logs</strong> — full record of all user and system actions</li>
+               </ul>`
+      },
+      {
+        title: "🕵️ Privacy & Data Use",
+        body: `<p>Your data is yours. We are extremely strict about how we use it.</p>
+               <ul>
+                 <li><strong>Zero training on your data</strong> by default — we never use your conversations to train our models</li>
+                 <li><strong>Data residency choice</strong> — store data in EU (Ireland) or US (Virginia)</li>
+                 <li><strong>Zero retention option</strong> — messages are not persisted after delivery</li>
+                 <li><strong>Right to deletion</strong> — full data erasure on account closure within 30 days</li>
+               </ul>`
+      },
+      {
+        title: "🔍 Vulnerability & Pen Testing",
+        body: `<p>We invest heavily in proactive security testing.</p>
+               <ul>
+                 <li><strong>Annual penetration tests</strong> by third-party security firms (Cure53, NCC Group)</li>
+                 <li><strong>Continuous SAST/DAST</strong> integrated into our CI/CD pipeline</li>
+                 <li><strong>Bug bounty programme</strong> — responsible disclosure at security.ruby.ai</li>
+                 <li><strong>Dependency scanning</strong> — automated alerts for vulnerable packages</li>
+               </ul>`
+      }
+    ]
+  },
+
+  integrations: {
+    short: "Ruby AI works with the tools your team already uses. Here's the full landscape:",
+    sections: [
+      {
+        title: "📞 CRM — Customer Relationship Management",
+        body: `<ul>
+                 <li><strong>Salesforce</strong> — sync contacts, cases, and chat transcripts; trigger flows from conversations</li>
+                 <li><strong>HubSpot</strong> — create deals and contacts automatically; log conversations to the timeline</li>
+                 <li><strong>Pipedrive</strong> — push qualified leads directly into your pipeline</li>
+                 <li><strong>Zoho CRM</strong> — bi-directional sync of contacts and notes</li>
+               </ul>`
+      },
+      {
+        title: "🎧 Helpdesk & Support",
+        body: `<ul>
+                 <li><strong>Zendesk</strong> — auto-create tickets from unresolved chats; sync agent notes</li>
+                 <li><strong>Intercom</strong> — replace or augment Intercom's default bot with Ruby AI</li>
+                 <li><strong>Freshdesk</strong> — route chats to tickets with full context preserved</li>
+                 <li><strong>Front</strong> — surface Ruby AI context inside your shared inbox</li>
+               </ul>`
+      },
+      {
+        title: "🛒 E-commerce",
+        body: `<ul>
+                 <li><strong>Shopify</strong> — answer order status, shipping, and product questions automatically</li>
+                 <li><strong>WooCommerce</strong> — pull live product and order data into conversations</li>
+                 <li><strong>Stripe</strong> — answer billing and subscription queries with live data</li>
+                 <li><strong>BigCommerce</strong> — full cart and catalogue awareness</li>
+               </ul>`
+      },
+      {
+        title: "💬 Communication & Productivity",
+        body: `<ul>
+                 <li><strong>Slack</strong> — receive escalation alerts and respond to chats from Slack</li>
+                 <li><strong>Microsoft Teams</strong> — embed Ruby AI as a Teams bot in any channel</li>
+                 <li><strong>Notion</strong> — auto-log summaries of resolved conversations</li>
+                 <li><strong>Airtable</strong> — push structured data from conversations into bases</li>
+                 <li><strong>Google Workspace</strong> — Sheets sync for analytics export</li>
+               </ul>`
+      },
+      {
+        title: "🔧 No-Code Automation",
+        body: `<ul>
+                 <li><strong>Zapier</strong> — 5,000+ app connections with no code; trigger zaps from any Ruby AI event</li>
+                 <li><strong>Make (Integromat)</strong> — visual flow builder for complex multi-step automations</li>
+                 <li><strong>n8n</strong> — self-hostable open-source automation with Ruby AI node</li>
+               </ul>
+               <p>Don't see your tool? Request it at <strong>ruby.ai/integrations/request</strong> — popular requests ship within 30 days.</p>`
+      }
+    ]
+  },
+
+  trial: {
+    short: "Trying Ruby AI is completely free. Here's exactly what you get:",
+    sections: [
+      {
+        title: "🎁 What's Included in the 14-Day Trial",
+        body: `<p>Your free trial gives you <strong>full Pro plan access</strong> — no limitations, no feature gating.</p>
+               <ul>
+                 <li><strong>Unlimited messages</strong> for 14 full days</li>
+                 <li><strong>5 bot widgets</strong> with custom branding</li>
+                 <li><strong>Analytics dashboard</strong> — full sentiment and topic analysis</li>
+                 <li><strong>API access</strong> — 10,000 calls included during trial</li>
+                 <li><strong>All native integrations</strong> — Slack, Zapier, Zendesk, and more</li>
+                 <li><strong>Priority email support</strong> during onboarding</li>
+               </ul>`
+      },
+      {
+        title: "💳 No Credit Card — What Happens After?",
+        body: `<p>We will never charge you automatically. At the end of 14 days:</p>
+               <ul>
+                 <li>You'll receive an email with a comparison of plans</li>
+                 <li>You can choose a paid plan, or stay on <strong>Free Starter</strong> indefinitely</li>
+                 <li>If you do nothing, you'll be moved to Starter automatically — no charges</li>
+                 <li>Your bot configuration and history are always preserved</li>
+               </ul>`
+      },
+      {
+        title: "🚀 How to Get Started in 3 Steps",
+        body: `<ol style="padding-left:16px;line-height:2">
+                 <li>Create a free account at <strong>ruby.ai/signup</strong></li>
+                 <li>Follow the 5-minute setup wizard to build your first bot</li>
+                 <li>Copy the embed snippet onto your website — done!</li>
+               </ol>
+               <p style="margin-top:8px">Need help during setup? Our onboarding team offers a free 20-minute call for all trial users.</p>`
+      }
+    ]
+  },
+
+  demo: {
+    short: "We'd love to show you Ruby AI in action. Here's how to book a session:",
+    sections: [
+      {
+        title: "📅 Book a Live Demo (30 min)",
+        body: `<p>Spend 30 minutes with one of our product specialists who'll:</p>
+               <ul>
+                 <li>Understand your use-case and goals</li>
+                 <li>Show the features most relevant to your business</li>
+                 <li>Answer any technical or commercial questions</li>
+                 <li>Set up a live bot on your site if you'd like</li>
+               </ul>
+               <p>Book at <strong>ruby.ai/demo</strong> — slots available daily, including evenings (GMT & EST).</p>`
+      },
+      {
+        title: "🗺 Self-Guided Product Tour",
+        body: `<p>Prefer to explore at your own pace? Our interactive product tour walks you through every feature without needing an account.</p>
+               <ul>
+                 <li>Takes about 12 minutes to complete</li>
+                 <li>Click-through simulation of the real product</li>
+                 <li>Covers setup, analytics, integrations, and API</li>
+               </ul>
+               <p>Start at <strong>ruby.ai/tour</strong> — no login required.</p>`
+      },
+      {
+        title: "🎬 Video Walkthrough (5 min)",
+        body: `<p>Short on time? Our 5-minute overview video covers the key features and a live demo of a bot being built from scratch.</p>
+               <p>Watch at <strong>ruby.ai/video</strong>. Chapters include:</p>
+               <ul>
+                 <li>00:30 — Building your first bot</li>
+                 <li>02:00 — Analytics dashboard tour</li>
+                 <li>03:30 — Integrations overview</li>
+                 <li>04:30 — Pricing and next steps</li>
+               </ul>`
+      }
+    ]
+  },
+
+  faq: {
+    short: "Here are answers to the questions we hear most often:",
+    sections: [
+      {
+        title: "❓ Can I use Ruby AI on multiple websites?",
+        body: `<p>Yes! All paid plans support multiple domains. Pro includes 5 widgets, Business includes unlimited widgets across unlimited domains. You can configure each widget independently with its own branding, tone, and knowledge base.</p>`
+      },
+      {
+        title: "❓ Does Ruby AI work in languages other than English?",
+        body: `<p>Absolutely. Ruby AI supports <strong>40+ languages</strong> including Spanish, French, German, Arabic, Japanese, Hindi, Portuguese, and more. Language detection is automatic — the bot replies in the same language the user writes in.</p>`
+      },
+      {
+        title: "❓ Can I train the AI on my own documents?",
+        body: `<p>Yes — all paid plans include our Knowledge Base feature. You can upload:</p>
+               <ul>
+                 <li>PDFs, Word docs, and plain text files</li>
+                 <li>URLs (we'll crawl your website automatically)</li>
+                 <li>FAQs in CSV or JSON format</li>
+               </ul>
+               <p>The bot will answer questions based on your uploaded content within minutes of indexing.</p>`
+      },
+      {
+        title: "❓ What happens if the bot doesn't know the answer?",
+        body: `<p>You have full control over the fallback behaviour. Options include:</p>
+               <ul>
+                 <li>Escalate to a human agent (via Zendesk, Intercom, email, or Slack)</li>
+                 <li>Display a custom fallback message with a contact form</li>
+                 <li>Ask a clarifying question to try to narrow the query</li>
+                 <li>Log the unanswered question for you to review and add to the knowledge base</li>
+               </ul>`
+      },
+      {
+        title: "❓ Is there a setup fee or contract?",
+        body: `<p>No setup fees, no contracts, no lock-in. All plans are month-to-month and can be cancelled at any time from your account settings. Unused days of a paid month are not refunded, but we'll always give you fair warning before any renewal.</p>`
+      }
+    ]
+  },
+
+  compare: {
+    short: "Wondering how Ruby AI stacks up? Here's how we compare to common alternatives:",
+    sections: [
+      {
+        title: "🆚 Ruby AI vs Intercom",
+        body: `<ul>
+                 <li><strong>Price</strong> — Ruby AI Pro ($19/mo) vs Intercom Starter (~$74/mo)</li>
+                 <li><strong>AI quality</strong> — Ruby AI uses a fine-tuned LLM; Intercom's bot is rule-based on lower tiers</li>
+                 <li><strong>Customisation</strong> — Ruby AI allows full persona, tone, and logic customisation from day one</li>
+                 <li><strong>Integrations</strong> — both offer CRM and helpdesk connectors; Ruby AI additionally supports no-code tools</li>
+               </ul>`
+      },
+      {
+        title: "🆚 Ruby AI vs Zendesk AI",
+        body: `<ul>
+                 <li><strong>Setup time</strong> — Ruby AI: 10 minutes. Zendesk AI: requires full Zendesk Suite ($149+/mo)</li>
+                 <li><strong>Standalone use</strong> — Ruby AI works without a helpdesk; Zendesk AI is tied to the Zendesk ecosystem</li>
+                 <li><strong>Pricing</strong> — Ruby AI is significantly more affordable for small and mid-size teams</li>
+               </ul>`
+      },
+      {
+        title: "🆚 Ruby AI vs Building In-House",
+        body: `<ul>
+                 <li><strong>Time to launch</strong> — Ruby AI: minutes. In-house: 3–6 months minimum</li>
+                 <li><strong>Cost</strong> — Ruby AI: $19–$49/mo. In-house: $50,000–$200,000/year (engineering salary)</li>
+                 <li><strong>Maintenance</strong> — Ruby AI handles infrastructure, uptime, and model updates</li>
+                 <li><strong>Best for</strong> — In-house is only worth it at extreme scale (&gt;10M conversations/month) with very specific requirements</li>
+               </ul>`
+      }
+    ]
+  },
+
+  thanks: [
+    "You're very welcome! Anything else I can help you with? 😊",
+    "Happy to help! Feel free to ask if anything else comes up.",
+    "Anytime — that's what I'm here for!"
+  ],
+
+  bye: "Thanks for chatting with Ruby AI today! Have a brilliant day 🔥 — I'm always here when you need me.",
+
+  default: [
+    "That's a great question. Could you tell me a bit more so I can give you the most accurate answer?",
+    "Interesting! I want to make sure I point you in exactly the right direction — could you expand on what you're looking for?",
+    "Good question! Let me help you properly. Could you clarify a bit more about what you need? Or try one of the topics below.",
+  ]
+};
+
+// ─── TOPICS ──────────────────────────────────────────────────────────────────
+
+const TOPICS = [
+  {icon:'🛎', label:'Our services',    key:'services'},
+  {icon:'💰', label:'Pricing plans',   key:'pricing'},
+  {icon:'🔧', label:'Get support',     key:'support'},
+  {icon:'✨', label:'About us',        key:'about'},
+  {icon:'🔑', label:'API & Docs',      key:'api'},
+  {icon:'🆓', label:'Free trial',      key:'trial'},
+  {icon:'🔒', label:'Security',        key:'security'},
+  {icon:'🔗', label:'Integrations',    key:'integrations'},
+  {icon:'🎬', label:'Book a demo',     key:'demo'},
+  {icon:'❓', label:'FAQs',            key:'faq'},
+  {icon:'⚖️', label:'Compare plans',  key:'compare'},
+];
+
+const WELCOME_QUICK = TOPICS.slice(0, 6);
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+
+let mood = 'neutral', busy = false, msgId = 0;
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function t(){ return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function fmt(text){
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(201,150,46,0.12);padding:1px 5px;border-radius:4px;font-size:12px;color:var(--au4)">$1</code>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+
+// ─── LOCAL NLP BRAIN ──────────────────────────────────────────────────────────
+
+// Math evaluator — handles expressions like "what is 12 * 8 + 3?"
+function tryMath(raw) {
+  const s = raw.replace(/what'?s|calculate|compute|solve|equals?|what is/gi, '').trim();
+  const expr = s.replace(/[^0-9+\-*/.() %^]/g, '').trim();
+  if (!expr || expr.length < 2) return null;
+  try {
+    // Safe eval: only allow numeric expressions
+    if (!/^[\d\s+\-*/.()%^]+$/.test(expr)) return null;
+    const safeExpr = expr.replace(/\^/g, '**');
+    const result = Function('"use strict"; return (' + safeExpr + ')')();
+    if (typeof result === 'number' && isFinite(result)) {
+      return `The answer to **${expr.trim()}** is **${+result.toFixed(10)}** 🔢`;
+    }
+  } catch(e) {}
+  return null;
+}
+
+// Conversational general knowledge responses
+const GENERAL = [
+  // Greetings
+  { test: /^\s*(hi+|hello+|hey+|howdy|greetings|yo+|sup|hiya|helo|hii)\s*[!?.]?\s*$/i,
+    ans: () => pick(["Hey! Great to have you here. Ask me anything 🔥", "Hello! I'm Ruby AI — what can I help you with today?", "Hi there! Fire away — I'm all yours 🔥"]) },
+
+  // How are you
+  { test: /how are you|how('s| is) it going|you okay|you good|how do you feel|how have you been/i,
+    ans: () => "I'm running perfectly — every system green! 🔥 Thanks for asking. How can I help you today?" },
+
+  // What are you / who are you
+  { test: /what are you|who are you|what('s| is) your name|are you (a |an )?(bot|ai|robot|human|real)/i,
+    ans: () => "I'm **Ruby AI** — an intelligent offline assistant built into the Ruby AI Crimson Edition platform. I can answer questions about our services, pricing, API, security, integrations, and more. I also have some general knowledge up my sleeve! 🔥" },
+
+  // What can you do
+  { test: /what can you (do|help|answer)|your (capabilities|abilities|features)|help me with/i,
+    ans: () => "I can help you with:\n\n• **Ruby AI topics** — services, pricing, API, security, integrations, demo, trial\n• **General questions** — maths, definitions, how-things-work\n• **Conversational chat** — just talk to me!\n• **Comparisons** — Ruby AI vs competitors\n\nJust type naturally — I understand questions, not just commands." },
+
+  // Time / date
+  { test: /what('?s| is) the (time|date|day)|what time is it|today'?s date/i,
+    ans: () => {
+      const now = new Date();
+      return `Right now it's **${now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}** on **${now.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'})}** 🕐`;
+    }
+  },
+
+  // Jokes
+  { test: /tell me a joke|joke|make me laugh|say something funny|funny/i,
+    ans: () => pick([
+      "Why do programmers prefer dark mode?\n\nBecause **light attracts bugs**. 🐛",
+      "I asked my AI assistant to tell me a joke.\n\nIt said: **\"Error 404: Humour not found.\"** 😅",
+      "Why did the chatbot break up with the database?\n\n**Too many unresolved queries.** 💔",
+      "Why don't scientists trust atoms?\n\n**Because they make up everything.** ⚛️"
+    ])
+  },
+
+  // What is AI / machine learning / chatbot
+  { test: /what is (ai|artificial intelligence)(\?|$| )/i,
+    ans: () => "**Artificial Intelligence (AI)** is the simulation of human intelligence by computers. It enables machines to learn from data, recognise patterns, make decisions, and understand natural language — without being explicitly programmed for each task.\n\nModern AI powers everything from voice assistants and recommendation engines to tools like Ruby AI." },
+
+  { test: /what is (machine learning|ml)(\?|$| )/i,
+    ans: () => "**Machine Learning (ML)** is a branch of AI where systems learn and improve from experience (data) without being explicitly programmed.\n\nInstead of writing rules, you feed the system examples and it figures out the patterns itself. It's how email spam filters, Netflix recommendations, and language models all work." },
+
+  { test: /what is (a |an )?(chatbot|chat bot)(\?|$| )/i,
+    ans: () => "A **chatbot** is a software program designed to simulate conversation with humans — either via text or voice.\n\nModern chatbots like Ruby AI use AI and natural language processing (NLP) to understand intent and respond intelligently, rather than just matching fixed keywords." },
+
+  { test: /what is (nlp|natural language processing)(\?|$| )/i,
+    ans: () => "**Natural Language Processing (NLP)** is the branch of AI that helps computers understand, interpret, and generate human language.\n\nIt powers chatbots, search engines, translation tools, and voice assistants. Ruby AI uses NLP to understand what you mean — not just what you literally type." },
+
+  { test: /what is (an? )?(api|rest api|restful api)(\?|$| )/i,
+    ans: () => "An **API (Application Programming Interface)** is a set of rules that lets different software applications communicate with each other.\n\nA **REST API** uses standard HTTP methods (GET, POST, PUT, DELETE) to exchange data in JSON format. It's how Ruby AI lets developers integrate chat features into their own apps programmatically." },
+
+  { test: /what is (an? )?sdk(\?|$| )/i,
+    ans: () => "An **SDK (Software Development Kit)** is a packaged set of tools, libraries, and documentation that makes it easier for developers to build applications for a specific platform.\n\nRuby AI's SDKs (Python, Node.js, Go, Ruby, Java) wrap the raw API into friendly, idiomatic code so you don't have to write HTTP requests by hand." },
+
+  { test: /what is (a |an )?(webhook)(\?|$| )/i,
+    ans: () => "A **webhook** is a way for one system to automatically notify another when something happens — it's the opposite of polling.\n\nInstead of your app asking \"did anything change?\" every few seconds, Ruby AI *pushes* an HTTP POST to your server the moment an event fires (e.g. a conversation ends or a ticket is created)." },
+
+  { test: /what is (gdpr|general data protection regulation)(\?|$| )/i,
+    ans: () => "**GDPR (General Data Protection Regulation)** is a European Union law that governs how personal data of EU citizens must be collected, stored, and processed.\n\nKey rights it gives users include: access to their data, right to erasure ('right to be forgotten'), and data portability. Ruby AI is fully GDPR-compliant with EU data residency options." },
+
+  { test: /what is (soc 2|soc2)(\?|$| )/i,
+    ans: () => "**SOC 2 (Service Organisation Control 2)** is a security auditing framework developed by the AICPA. It evaluates a company's controls around security, availability, confidentiality, processing integrity, and privacy.\n\n**Type II** means the audit covers a period of time (usually 6–12 months), not just a point-in-time snapshot — making it more rigorous. Ruby AI holds SOC 2 Type II certification." },
+
+  { test: /what is (encryption|aes|tls|ssl|https)(\?|$| )/i,
+    ans: () => "**Encryption** is the process of converting data into an unreadable format that can only be decoded with the correct key.\n\n• **AES-256** — the gold standard for data at rest; used by banks and governments\n• **TLS 1.3** — encrypts data in transit (what makes HTTPS secure)\n• **HTTPS** — HTTP over TLS; the padlock you see in your browser\n\nRuby AI uses both AES-256 and TLS 1.3 to protect your data end to end." },
+
+  // General knowledge — common questions
+  { test: /what is (the )?(internet)(\?|$| )/i,
+    ans: () => "The **Internet** is a global network of interconnected computers that communicate using standardised protocols (mainly TCP/IP). It enables the World Wide Web, email, file sharing, streaming, and services like Ruby AI.\n\nIt was developed from ARPANET in the late 1960s and became publicly accessible in the early 1990s." },
+
+  { test: /what is (the )?(cloud|cloud computing)(\?|$| )/i,
+    ans: () => "**Cloud computing** means delivering computing resources — servers, storage, databases, software — over the internet ('the cloud') instead of running them locally on your own hardware.\n\nBenefits include pay-as-you-go pricing, infinite scalability, and no maintenance overhead. Ruby AI runs on cloud infrastructure for 99.97% uptime." },
+
+  { test: /what is (open source|open-source)(\?|$| )/i,
+    ans: () => "**Open source** software has its source code made publicly available for anyone to view, use, modify, and distribute.\n\nFamous examples include Linux, Python, React, and VS Code. Open source encourages collaboration and transparency — many of Ruby AI's underlying tools build on open source foundations." },
+
+  { test: /what is (saas|software as a service)(\?|$| )/i,
+    ans: () => "**SaaS (Software as a Service)** is a software delivery model where applications are hosted in the cloud and accessed via a web browser — no installation required.\n\nYou pay a subscription fee instead of buying a licence. Ruby AI is a SaaS platform — you sign up, embed a snippet, and you're live." },
+
+  // How-things-work
+  { test: /how does (ruby ai|this) work/i,
+    ans: () => "Ruby AI works in three layers:\n\n**1. Natural Language Understanding** — analyses what you type, extracts intent and key entities\n**2. Knowledge & Logic Engine** — matches your intent against our knowledge base, integrations, and response logic\n**3. Response Generation** — constructs a relevant, contextual reply in your chosen tone\n\nAll of this happens in milliseconds — and the more specific your question, the better I can help." },
+
+  { test: /how does (the )?(internet|web) work/i,
+    ans: () => "When you load a webpage:\n\n1. Your browser looks up the domain via **DNS** to get an IP address\n2. It opens a **TCP connection** to the server (secured with TLS/HTTPS)\n3. Sends an **HTTP request** (\"give me this page\")\n4. The server processes the request and returns **HTML, CSS, and JavaScript**\n5. Your browser renders that code into what you see\n\nThe whole process typically takes under 200ms." },
+
+  { test: /how does (machine learning|ml|ai) (work|learn)/i,
+    ans: () => "Machine learning works through three key steps:\n\n**1. Data** — feed the model large amounts of labelled examples (e.g. emails tagged as spam or not)\n**2. Training** — the model adjusts its internal parameters (weights) to minimise prediction errors\n**3. Inference** — once trained, the model applies learned patterns to new, unseen data\n\nModern deep learning models like LLMs repeat this process billions of times across vast datasets." },
+
+  // What's the capital / country facts
+  { test: /capital (of|city of) ([\w\s]+)/i,
+    ans: (m) => {
+      const country = (m[2]||'').trim().toLowerCase();
+      const caps = {
+        france:'Paris', germany:'Berlin', japan:'Tokyo', india:'New Delhi',
+        china:'Beijing', usa:'Washington D.C.', 'united states':'Washington D.C.',
+        uk:'London', 'united kingdom':'London', australia:'Canberra',
+        canada:'Ottawa', brazil:'Brasília', russia:'Moscow',
+        italy:'Rome', spain:'Madrid', portugal:'Lisbon',
+        mexico:'Mexico City', argentina:'Buenos Aires',
+        'south africa':'Pretoria / Cape Town / Bloemfontein',
+        egypt:'Cairo', nigeria:'Abuja', kenya:'Nairobi',
+        'saudi arabia':'Riyadh', uae:'Abu Dhabi', singapore:'Singapore',
+        indonesia:'Jakarta', 'south korea':'Seoul', thailand:'Bangkok',
+        vietnam:'Hanoi', pakistan:'Islamabad', bangladesh:'Dhaka',
+        turkey:'Ankara', greece:'Athens', sweden:'Stockholm',
+        norway:'Oslo', denmark:'Copenhagen', finland:'Helsinki',
+        netherlands:'Amsterdam', belgium:'Brussels', switzerland:'Bern',
+        austria:'Vienna', poland:'Warsaw', ukraine:'Kyiv',
+        czechia:'Prague', 'czech republic':'Prague', hungary:'Budapest',
+        romania:'Bucharest', ireland:'Dublin', 'new zealand':'Wellington',
+        chile:'Santiago', colombia:'Bogotá', peru:'Lima',
+        ghana:'Accra', ethiopia:'Addis Ababa', tanzania:'Dodoma',
+        morocco:'Rabat', algeria:'Algiers', tunisia:'Tunis',
+        israel:'Jerusalem', jordan:'Amman', iraq:'Baghdad', iran:'Tehran',
+        afghanistan:'Kabul', 'sri lanka':'Sri Jayawardenepura Kotte',
+        myanmar:'Naypyidaw', malaysia:'Kuala Lumpur', philippines:'Manila',
+        nepal:'Kathmandu', 'north korea':'Pyongyang'
+      };
+      const ans = caps[country];
+      if (ans) return `The capital of **${country.replace(/\b\w/g,c=>c.toUpperCase())}** is **${ans}** 🌍`;
+      return `I don't have that capital on hand, but you can look it up at **en.wikipedia.org** — my general knowledge focuses on common countries.`;
+    }, useMatch: true
+  },
+
+  // Currency / conversion help (conceptual, not live rates)
+  { test: /what is (the )?(currency|money) (of|in|used in) ([\w\s]+)/i,
+    ans: (m) => {
+      const country = (m[4]||'').trim().toLowerCase();
+      const currencies = {
+        france:'Euro (€)', germany:'Euro (€)', italy:'Euro (€)', spain:'Euro (€)',
+        japan:'Japanese Yen (¥)', india:'Indian Rupee (₹)', china:'Chinese Yuan (¥)',
+        usa:'US Dollar ($)', 'united states':'US Dollar ($)',
+        uk:'British Pound (£)', 'united kingdom':'British Pound (£)',
+        australia:'Australian Dollar (A$)', canada:'Canadian Dollar (C$)',
+        brazil:'Brazilian Real (R$)', russia:'Russian Ruble (₽)',
+        'south korea':'South Korean Won (₩)', singapore:'Singapore Dollar (S$)',
+        'saudi arabia':'Saudi Riyal (SAR)', uae:'UAE Dirham (AED)',
+        switzerland:'Swiss Franc (CHF)', sweden:'Swedish Krona (SEK)',
+        norway:'Norwegian Krone (NOK)', mexico:'Mexican Peso (MXN)',
+        nigeria:'Nigerian Naira (₦)', 'south africa':'South African Rand (ZAR)',
+        turkey:'Turkish Lira (₺)', indonesia:'Indonesian Rupiah (Rp)',
+        thailand:'Thai Baht (฿)', egypt:'Egyptian Pound (EGP)',
+        pakistan:'Pakistani Rupee (PKR)', bangladesh:'Bangladeshi Taka (BDT)'
+      };
+      const ans = currencies[country];
+      if (ans) return `The currency of **${country.replace(/\b\w/g,c=>c.toUpperCase())}** is the **${ans}** 💰`;
+      return `I don't have that currency on hand. For live exchange rates, check **xe.com** or **google.com/finance**.`;
+    }, useMatch: true
+  },
+
+  // Maths keywords without expression (help prompt)
+  { test: /calculat|what is \d|how much is \d|\d+ (plus|minus|times|divided|multiplied)/i,
+    ans: () => null, skip: true }, // handled by tryMath
+
+  // What day / year things happened
+  { test: /when was (the )?(internet|world wide web) (invented|created|founded|made)/i,
+    ans: () => "The **Internet** evolved from ARPANET, which first went online in **1969**.\n\nThe **World Wide Web** — the part most people mean when they say 'internet' — was invented by **Tim Berners-Lee** in **1989** and became publicly available in **1991**." },
+
+  { test: /when was (python|the python language) (created|made|invented|released)/i,
+    ans: () => "**Python** was created by **Guido van Rossum** and first released in **1991**. It was designed to be readable and simple, inspired by the ABC language. Python 3.0 — a major backwards-incompatible revision — was released in 2008." },
+
+  { test: /when was (javascript|js) (created|made|invented|released)/i,
+    ans: () => "**JavaScript** was created by **Brendan Eich** at Netscape in just **10 days** in 1995. It was originally called Mocha, then LiveScript, before being renamed JavaScript for marketing reasons (it shares little with Java). It's now the most popular programming language in the world." },
+
+  // Programming language questions
+  { test: /what is (python)(\?|$| )/i,
+    ans: () => "**Python** is a high-level, general-purpose programming language known for its clean, readable syntax.\n\nIt's widely used in data science, machine learning, web development (Django/Flask), automation, and scripting. It consistently ranks as one of the top 3 most popular languages globally." },
+
+  { test: /what is (javascript|js)(\?|$| )/i,
+    ans: () => "**JavaScript** is the programming language of the web. It runs in every browser and enables interactive, dynamic web pages.\n\nWith Node.js, it also runs on servers. Frameworks like React, Vue, and Angular are all built on JavaScript. Ruby AI's frontend is written in JavaScript." },
+
+  { test: /what is (ruby)(\?|$| )/i,
+    ans: () => "**Ruby** is an elegant, object-oriented programming language created by Yukihiro Matsumoto ('Matz') in 1995.\n\nIt's best known for the **Ruby on Rails** web framework. Ruby values developer happiness and expressiveness — the language reads almost like English. Interestingly, Ruby AI was named after it! 🔥" },
+
+  // Asking about Ruby AI specifically (free-form)
+  { test: /how (long|much time) (does it take|to) (set up|install|deploy|go live|get started)/i,
+    ans: () => "Getting started with Ruby AI is fast:\n\n• **Basic setup** — embed a widget on your site in under **10 minutes**\n• **Connect to your knowledge base** — upload docs and go live in **30 minutes**\n• **Full CRM/helpdesk integration** — typically **1–2 hours** with our step-by-step guides\n• **Custom AI model fine-tuning** — **2–5 business days** depending on data volume\n\nOur onboarding team offers a free 20-minute call to get you live fast." },
+
+  { test: /how many (languages|language)/i,
+    ans: () => "Ruby AI supports **40+ languages** including English, Spanish, French, German, Portuguese, Italian, Arabic, Japanese, Korean, Hindi, Mandarin, Dutch, Swedish, Polish, Turkish, and many more.\n\nLanguage detection is automatic — the bot replies in the same language the user types in, with no configuration required." },
+
+  { test: /(is|does) ruby ai (work|support|available|run) (offline|without internet|locally)/i,
+    ans: () => "The **Ruby AI platform** requires internet connectivity to serve live chats and sync analytics.\n\nHowever, our **Enterprise plan** offers a **private cloud or on-premise deployment** option — where the model runs entirely within your own infrastructure with no outbound connections required. Contact sales@ruby.ai for details." },
+
+  { test: /can (i|we) (cancel|stop|end) (my |the )?(subscription|plan|account)/i,
+    ans: () => "Yes — you can **cancel anytime** from your account settings with no questions asked.\n\n• No cancellation fees\n• No minimum contract period\n• Your data is preserved for 90 days after cancellation (in case you return)\n• Full data deletion available on request within 30 days\n\nWe also offer a **pause feature** if you just need a break." },
+
+  { test: /do (you|ruby ai) (store|save|keep|retain|log) (my |our )?(messages|data|conversations)/i,
+    ans: () => "By default, Ruby AI **stores conversation logs** to power analytics and allow session continuity.\n\nYou have full control:\n• **Zero retention mode** — messages are not stored after delivery (available on all paid plans)\n• **Data residency** — choose EU (Ireland) or US (Virginia) storage\n• **Right to deletion** — wipe all data at any time from your dashboard\n\nWe never train our models on your data without explicit written consent." },
+
+  { test: /how (do i|to) (embed|install|add|put) (the )?(widget|chatbot|bot) (on|to|into) (my )?(website|site|page)/i,
+    ans: () => "Embedding Ruby AI on your site takes **3 steps**:\n\n1. Log in to your dashboard at **ruby.ai/dashboard**\n2. Go to **Widgets → Copy Embed Code**\n3. Paste the snippet before the closing `</body>` tag on your site\n\nThat's it — the widget goes live immediately. It works with any website, CMS, or framework including WordPress, Webflow, Shopify, and custom HTML." },
+
+  { test: /what (happens|do i do) if (the bot|it|ruby ai) (doesn'?t|can'?t|won'?t) (know|answer|respond|understand)/i,
+    ans: () => "When Ruby AI doesn't have a confident answer, you have several fallback options:\n\n• **Escalate to a human agent** — hand off to your team via Zendesk, Intercom, Slack, or email\n• **Custom fallback message** — show a contact form or helpful redirect\n• **Ask a clarifying question** — the bot narrows the query before giving up\n• **Log unanswered questions** — review and add them to your knowledge base to improve over time\n\nYou configure fallback behaviour per-bot from your dashboard." },
+
+  // Small talk / personality
+  { test: /what'?s your favourite|do you (like|enjoy|prefer|love)|your (favourite|favorite|opinion on)/i,
+    ans: () => pick([
+      "As an AI, I don't have personal preferences — but if I did, I'd probably enjoy **clean code, fast APIs, and zero downtime**. 😄",
+      "I'm a bit biased — my favourite thing is **answering your questions accurately**! What would you like to know?",
+      "I don't experience preferences the way you do, but I'm genuinely built to love good conversations. What's on your mind?"
+    ])
+  },
+
+  { test: /are you (human|a person|real|alive|conscious)/i,
+    ans: () => "I'm not human — I'm an **AI assistant** built into Ruby AI Crimson Edition. I'm designed to understand natural language and respond helpfully, but I don't have consciousness, feelings, or a physical form.\n\nThat said, I'll always be honest with you, and I'm here whenever you need me. 🔥" },
+
+  { test: /can you (remember|recall|remember what i said)/i,
+    ans: () => "I can remember everything said **within this current session** — so I have full context of our conversation so far.\n\nI don't retain memory between separate sessions. Each new chat starts fresh. If you need persistent context across sessions, Ruby AI's platform stores conversation history in your dashboard." },
+
+  // Compliments
+  { test: /you('?re| are) (great|amazing|awesome|brilliant|smart|helpful|good|the best|fantastic)/i,
+    ans: () => pick(["That means a lot — I'll keep it up! 🔥 Anything else I can help with?", "Thank you! That's the goal. What else would you like to know?", "Really appreciate that! Fire away with your next question 🔥"]) },
+
+  // Confusion / not sure
+  { test: /i (don'?t understand|don'?t get it|'?m confused|'?m lost|'?m not sure what you mean)/i,
+    ans: () => "No worries — let me try to be clearer. Could you tell me which part you'd like me to explain differently? Or feel free to ask the same question a different way and I'll give it another go. 😊" },
+
+  // Thanks / bye handled separately
+];
+
+// Score-based intent matching for KB topics
+const KB_RULES = [
+  { key:'greeting',     score: (s) => /^\s*(hi+|hello+|hey+|howdy|greetings|yo+|sup|hiya)\s*[!?.]?\s*$/i.test(s) ? 10 : 0 },
+  { key:'services',     score: (s) => w(s, ['service','offer','feature','product','what do you do','what can you do','tell me about ruby','what does ruby']) },
+  { key:'pricing',      score: (s) => w(s, ['pric','plan','cost','fee','how much','subscri','tier','cheap','afford','billing','invoice','payment','charge']) },
+  { key:'support',      score: (s) => w(s, ['support','get help','raise a ticket','contact','talk to human','talk to agent','speak to someone','not working','broke','broken','stuck','issue','bug','error','problem','complaint']) },
+  { key:'about',        score: (s) => w(s, ['about ruby','about the company','who made','who built','team','founders','mission','story','history','headquarter','based in','founded','started','office']) },
+  { key:'api',          score: (s) => w(s, ['rest api','endpoint','sdk','developer','programm','connect via','integrate via','webhook','streaming','api key','api access','api call','api doc','http request']) },
+  { key:'trial',        score: (s) => /trial|free trial|try for free|no credit card|sign up free|start free|get started free/.test(s) ? 8 : 0 },
+  { key:'security',     score: (s) => w(s, ['secur','safe','encrypt','gdpr','privacy','data protect','compli','hipaa','soc 2','soc2','certif','pen test','audit','vulnerability']) },
+  { key:'integrations', score: (s) => w(s, ['integrat','zapier','slack','salesforce','hubspot','crm','shopify','zendesk','intercom','make ','n8n','connect to','plug into','work with']) },
+  { key:'demo',         score: (s) => /\b(book|schedule|request|arrange|watch)\b.*(demo|meeting|call|walkthrough|tour)|demo\b/.test(s) ? 8 : 0 },
+  { key:'faq',          score: (s) => w(s, ['faq','frequently asked','common question','can i use','do you support','does it support','is there a','how do i','multiple website','multilingual','train the bot','what happens if']) },
+  { key:'compare',      score: (s) => w(s, ['vs','versus','compare','alternative','competitor','intercom','zendesk','drift','better than','different from','switch from','why ruby']) },
+];
+
+function w(s, words) {
+  return words.reduce((acc, word) => acc + (s.includes(word) ? 2 : 0), 0);
+}
+
+function getReply(raw) {
+  const s = raw.toLowerCase().trim();
+
+  // 1. Maths
+  const mathResult = tryMath(raw);
+  if (mathResult) return mathResult;
+
+  // 2. Thanks / bye shortcuts
+  if (/\b(thank(s| you)|cheers|appreciate|perfect|great|wonderful|awesome)\b/.test(s)) return { _special: 'thanks' };
+  if (/\b(bye|goodbye|see you|ciao|later|done|that'?s all|no more)\b/.test(s)) return { _special: 'bye' };
+
+  // 3. General knowledge rules
+  for (const rule of GENERAL) {
+    if (rule.skip) continue;
+    const m = rule.useMatch ? s.match(rule.test) : rule.test.test(s);
+    if (m) {
+      const result = rule.useMatch ? rule.ans(m) : rule.ans();
+      if (result) return result;
+    }
+  }
+
+  // 4. KB intent scoring
+  let best = null, bestScore = 0;
+  for (const rule of KB_RULES) {
+    const score = rule.score(s);
+    if (score > bestScore) { bestScore = score; best = rule.key; }
+  }
+  if (best && bestScore >= 2 && KB[best]) return KB[best];
+
+  // 5. Fuzzy fallback — try to acknowledge the question specifically
+  return buildFallback(raw);
+}
+
+function buildFallback(raw) {
+  const s = raw.toLowerCase();
+  // Is it a question?
+  const isQuestion = /\?$|^(what|who|where|when|why|how|can|is|are|do|does|will|would|could|should)\b/.test(s.trim());
+  const starters = isQuestion
+    ? [
+        `That's a great question, but it's outside what I know for certain. For the most accurate answer, I'd recommend checking **docs.ruby.ai** or emailing **support@ruby.ai**.`,
+        `I want to give you a precise answer on that, but it's beyond my current knowledge. Try **docs.ruby.ai** or ask our support team at **support@ruby.ai** — they're fast!`,
+        `I'm not confident enough to answer that one accurately. Could you rephrase it, or try one of the topics below? Alternatively, our team at **support@ruby.ai** can help.`
+      ]
+    : [
+        `Interesting — I'm not sure exactly what you're looking for there. Could you add a bit more detail or try rephrasing?`,
+        `I want to make sure I give you the right answer. Could you clarify what you mean? Or browse the topics below.`,
+        `Tell me more! I want to point you in exactly the right direction.`
+      ];
+  return pick(starters);
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+
+function buildBubbleHTML(entry){
+  if (!entry || typeof entry === 'string'){
+    return `<div class="bubble">${fmt(typeof entry === 'string' ? entry : '')}</div>`;
+  }
+  let html = `<div class="bubble">${fmt(entry.short)}`;
+  if (entry.sections && entry.sections.length){
+    html += `<div class="expand-section">`;
+    entry.sections.forEach((sec, i) => {
+      const uid = `sec-${msgId}-${i}`;
+      html += `
+        <div class="expand-header" onclick="toggleSection('${uid}')">
+          <span>${sec.title}</span>
+          <span class="expand-arrow" id="arr-${uid}">▼</span>
+        </div>
+        <div class="expand-body" id="${uid}">${sec.body}</div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function toggleSection(uid){
+  const body = document.getElementById(uid);
+  const arr  = document.getElementById('arr-' + uid);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  arr.classList.toggle('open', !isOpen);
+}
+
+function addMsg(role, entry, id){
+  const c   = document.getElementById('msgs');
+  const el  = document.createElement('div');
+  el.id     = 'msg-' + id;
+  const bot = role === 'bot';
+
+  const bubbleHTML = bot ? buildBubbleHTML(entry) : `<div class="bubble">${fmt(typeof entry === 'string' ? entry : entry.short)}</div>`;
+
+  el.innerHTML = `<div class="row ${role}">
+    <div class="av">${bot ? '🔥' : 'U'}</div>
+    <div class="col">
+      ${bubbleHTML}
+      <div class="meta">
+        ${bot ? '<span style="color:var(--au3);font-weight:600">Ruby AI</span> · ' : ''}${t()}
+        ${bot ? `<div class="msg-actions">
+          <button class="msg-act-btn" onclick="copyMsg(${id})">📋 Copy</button>
+          <button class="msg-act-btn" onclick="feedbackMsg(${id},'up',this)">👍</button>
+          <button class="msg-act-btn" onclick="feedbackMsg(${id},'down',this)">👎</button>
+        </div>` : ''}
+      </div>
+    </div>
+  </div>`;
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+}
+
+function copyMsg(id){
+  const el = document.querySelector(`#msg-${id} .bubble`);
+  if (el) navigator.clipboard.writeText(el.innerText).then(() => toast('Copied to clipboard!'));
+}
+
+function feedbackMsg(id, dir, btn){
+  document.querySelectorAll(`#msg-${id} .msg-act-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  toast(dir === 'up' ? '👍 Thanks for the feedback!' : '👎 We\'ll work on that!');
+}
+
+function addQuick(items){
+  const c  = document.getElementById('msgs');
+  const el = document.createElement('div');
+  el.className = 'qr-wrap'; el.id = 'qr-block';
+  el.innerHTML = items.map(q =>
+    `<button class="qr" onclick="pickTopic('${q.label}','${q.key}',this.parentElement)">${q.icon} ${q.label}</button>`
+  ).join('');
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+
+function addSugCard(items){
+  const c = document.getElementById('msgs');
+  document.getElementById('sug-block')?.remove();
+  const el = document.createElement('div'); el.id = 'sug-block';
+  el.innerHTML = `<div class="sug-card">
+    <div class="sug-title">💡 Explore more topics</div>
+    <div class="sug-grid">
+      ${items.map(i => `
+        <div class="sug-opt" onclick="pickTopic('${i.label}','${i.key}',document.getElementById('sug-block'))">
+          <span style="font-size:14px">${i.icon}</span>${i.label}
+        </div>`).join('')}
+    </div>
+  </div>`;
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+
+function showTyping(label){
+  const c = document.getElementById('msgs');
+  const el = document.createElement('div'); el.className = 'typing-row'; el.id = 'typing';
+  el.innerHTML = `
+    <div class="av" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#3d1010,#280a0a);border:1px solid rgba(201,150,46,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;">🔥</div>
+    <div>
+      <div class="typing-bub"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+      ${label ? `<div style="font-size:10px;color:var(--dim);margin-top:4px">${label}</div>` : ''}
+    </div>`;
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+function removeTyping(){ document.getElementById('typing')?.remove(); }
+
+// ─── MOOD TRANSFORM ──────────────────────────────────────────────────────────
+
+function applyMood(entry){
+  if (typeof entry === 'string'){
+    return applyMoodStr(entry);
+  }
+  if (!entry || !entry.short) return entry;
+  const clone = JSON.parse(JSON.stringify(entry));
+  clone.short = applyMoodStr(clone.short);
+  return clone;
+}
+
+function applyMoodStr(text){
+  if (mood === 'concise'){
+    const lines = text.split('\n');
+    return lines.slice(0, 3).join('\n') + (lines.length > 3 ? '\n\n*(Concise mode — tap a section to expand)' : '');
+  }
+  if (mood === 'friendly') return '😊 ' + text;
+  if (mood === 'formal')   return text.replace(/I'm\b/g,"I am").replace(/can't/g,"cannot").replace(/won't/g,"will not").replace(/don't/g,"do not");
+  if (mood === 'creative') return '✨ ' + text + '\n\n*Curiosity is your compass — explore freely!*';
+  if (mood === 'expert')   return '🧠 ' + text + '\n\n*Ask me to go deeper on any section above.*';
+  if (mood === 'mentor')   return '🎓 ' + text + '\n\n*Take your time — expand the sections that interest you most.*';
+  return text;
+}
+
+// ─── REPLY LOGIC ─────────────────────────────────────────────────────────────
+
+function botReply(text){
+  busy = true;
+  document.getElementById('send').disabled = true;
+
+  // Typing delay proportional to response complexity
+  const delay = 500 + Math.min(text.length * 8, 800);
+  showTyping('Thinking…');
+
+  setTimeout(()=>{
+    removeTyping();
+    const raw = getReply(text);
+
+    let entry;
+    if (raw && raw._special === 'thanks') {
+      entry = pick(KB.thanks);
+    } else if (raw && raw._special === 'bye') {
+      entry = KB.bye;
+    } else {
+      entry = raw;
+    }
+
+    const final = applyMood(entry);
+    addMsg('bot', final, ++msgId);
+    busy = false;
+    document.getElementById('send').disabled = !document.getElementById('inp').value.trim();
+    if (msgId >= 6 && msgId % 5 === 1) setTimeout(() => addSugCard(TOPICS), 600);
+  }, delay);
+}
+
+function pickTopic(label, key, removeEl){
+  removeEl?.remove();
+  document.getElementById('qr-block')?.remove();
+  addMsg('user', label, ++msgId);
+  busy = true;
+  document.getElementById('send').disabled = true;
+  showTyping(`Loading ${label}…`);
+  setTimeout(()=>{
+    removeTyping();
+    const entry = KB[key] || pick(KB.default);
+    const final = applyMood(entry);
+    addMsg('bot', final, ++msgId);
+    busy = false;
+    document.getElementById('send').disabled = !document.getElementById('inp').value.trim();
+  }, 500 + Math.random() * 400);
+}
+
+function sendMsg(){
+  const inp  = document.getElementById('inp');
+  const text = inp.value.trim();
+  if (!text || busy) return;
+  document.getElementById('qr-block')?.remove();
+  document.getElementById('sug-block')?.remove();
+  addMsg('user', text, ++msgId);
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('cc').textContent = '0 / 600';
+  document.getElementById('send').disabled = true;
+  botReply(text);
+}
+
+function onInp(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  const len = el.value.length;
+  document.getElementById('cc').textContent = `${len} / 600`;
+  document.getElementById('cc').style.color = len > 550 ? 'var(--rmist)' : '';
+  document.getElementById('send').disabled = !el.value.trim() || busy;
+}
+
+function onKey(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } }
+
+function setMood(chip, key){
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  mood = key;
+  toast('Tone: ' + chip.textContent.trim());
+}
+
+function clearChat(){
+  const c = document.getElementById('msgs');
+  c.innerHTML = '<div class="divider">Session Cleared</div>';
+  msgId = 0;
+  busy  = false;
+  init();
+  toast('Chat cleared');
+}
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+function init(){
+  addMsg('bot', {
+    short: "Welcome to **Ruby AI** — Crimson Edition 🔥\n\nI'm your intelligent assistant. Ask me anything about services, pricing, API, security, integrations, and more — or tap a topic below to explore in detail.",
+    sections: []
+  }, ++msgId);
+  setTimeout(() => addQuick(WELCOME_QUICK), 450);
+}
+
+init();
+</script>
+</body>
+</html>
